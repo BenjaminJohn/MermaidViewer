@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="MermaidViewer" xml:space="preserve">
+    <value>Mermaid Viewer (BenJohn)</value>
+  </data>
+  <data name="MermaidViewer description" xml:space="preserve">
+    <value>Mermaid-Diagramm-Viewer mit Vorschau.</value>
+  </data>
+  <data name="Property_Display_Key" xml:space="preserve">
+    <value>Diagrammcode</value>
+  </data>
+  <data name="Property_Desc_Key" xml:space="preserve">
+    <value>Mermaid-Diagrammcode.</value>
+  </data>
+  <data name="Tab_Diagram" xml:space="preserve">
+    <value>Diagramm</value>
+  </data>
+  <data name="Tab_Code" xml:space="preserve">
+    <value>Code</value>
+  </data>
+  <data name="Tooltip_Undo" xml:space="preserve">
+    <value>Rückgängig</value>
+  </data>
+  <data name="Tooltip_CopySvg" xml:space="preserve">
+    <value>SVG kopieren</value>
+  </data>
+  <data name="Tooltip_DownloadSvg" xml:space="preserve">
+    <value>SVG herunterladen</value>
+  </data>
+  <data name="Tooltip_Fullscreen" xml:space="preserve">
+    <value>Vollbild</value>
+  </data>
+  <data name="Tooltip_ExitFullscreen" xml:space="preserve">
+    <value>Vollbild beenden</value>
+  </data>
+  <data name="Tooltip_OpenInMermaidLive" xml:space="preserve">
+    <value>In mermaid.live öffnen</value>
+  </data>
+  <data name="Status_Undo" xml:space="preserve">
+    <value>Letzte Änderung rückgängig gemacht.</value>
+  </data>
+  <data name="Status_SvgCopied" xml:space="preserve">
+    <value>SVG kopiert.</value>
+  </data>
+  <data name="Status_NoSvg" xml:space="preserve">
+    <value>Kein SVG verfügbar.</value>
+  </data>
+  <data name="Status_SvgDownloaded" xml:space="preserve">
+    <value>SVG heruntergeladen.</value>
+  </data>
+  <data name="Status_FullscreenUnavailable" xml:space="preserve">
+    <value>Fullscreen nicht verfügbar.</value>
+  </data>
+  <data name="Status_NoDiagram" xml:space="preserve">
+    <value>Kein Diagramm für mermaid.live.</value>
+  </data>
+  <data name="Status_PopupBlocked" xml:space="preserve">
+    <value>Popup blockiert.</value>
+  </data>
+  <data name="Status_CopyUnavailable" xml:space="preserve">
+    <value>Kopieren nicht möglich.</value>
+  </data>
+</root>

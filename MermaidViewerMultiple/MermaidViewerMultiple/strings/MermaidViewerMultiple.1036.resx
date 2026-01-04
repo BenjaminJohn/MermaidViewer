@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="MermaidViewerMultiple" xml:space="preserve">
+    <value>Mermaid Viewer (BenJohn) - Multiple</value>
+  </data>
+  <data name="MermaidViewerMultiple description" xml:space="preserve">
+    <value>Visualiseur et aperçu de diagrammes Mermaid. (Multiple)</value>
+  </data>
+  <data name="Property_Display_Key" xml:space="preserve">
+    <value>Code du diagramme</value>
+  </data>
+  <data name="Property_Desc_Key" xml:space="preserve">
+    <value>Code du diagramme Mermaid.</value>
+  </data>
+  <data name="Tab_Diagram" xml:space="preserve">
+    <value>Diagramme</value>
+  </data>
+  <data name="Tab_Code" xml:space="preserve">
+    <value>Code</value>
+  </data>
+  <data name="Tooltip_Undo" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="Tooltip_CopySvg" xml:space="preserve">
+    <value>Copier le SVG</value>
+  </data>
+  <data name="Tooltip_DownloadSvg" xml:space="preserve">
+    <value>Télécharger le SVG</value>
+  </data>
+  <data name="Tooltip_Fullscreen" xml:space="preserve">
+    <value>Plein écran</value>
+  </data>
+  <data name="Tooltip_ExitFullscreen" xml:space="preserve">
+    <value>Quitter le plein écran</value>
+  </data>
+  <data name="Tooltip_OpenInMermaidLive" xml:space="preserve">
+    <value>Ouvrir dans mermaid.live</value>
+  </data>
+  <data name="Status_Undo" xml:space="preserve">
+    <value>Dernière modification annulée.</value>
+  </data>
+  <data name="Status_SvgCopied" xml:space="preserve">
+    <value>SVG copié.</value>
+  </data>
+  <data name="Status_NoSvg" xml:space="preserve">
+    <value>Aucun SVG disponible.</value>
+  </data>
+  <data name="Status_SvgDownloaded" xml:space="preserve">
+    <value>SVG téléchargé.</value>
+  </data>
+  <data name="Status_FullscreenUnavailable" xml:space="preserve">
+    <value>Plein écran indisponible.</value>
+  </data>
+  <data name="Status_NoDiagram" xml:space="preserve">
+    <value>Aucun diagramme pour mermaid.live.</value>
+  </data>
+  <data name="Status_PopupBlocked" xml:space="preserve">
+    <value>Fenêtre contextuelle bloquée.</value>
+  </data>
+  <data name="Status_CopyUnavailable" xml:space="preserve">
+    <value>Copie impossible.</value>
+  </data>
+</root>

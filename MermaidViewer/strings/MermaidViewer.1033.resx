@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="MermaidViewer" xml:space="preserve">
+    <value>Mermaid Viewer (BenJohn)</value>
+  </data>
+  <data name="MermaidViewer description" xml:space="preserve">
+    <value>Mermaid diagram viewer and preview.</value>
+  </data>
+  <data name="Property_Display_Key" xml:space="preserve">
+    <value>Diagram Code</value>
+  </data>
+  <data name="Property_Desc_Key" xml:space="preserve">
+    <value>Mermaid diagram code.</value>
+  </data>
+  <data name="Tab_Diagram" xml:space="preserve">
+    <value>Diagram</value>
+  </data>
+  <data name="Tab_Code" xml:space="preserve">
+    <value>Code</value>
+  </data>
+  <data name="Tooltip_Undo" xml:space="preserve">
+    <value>Undo</value>
+  </data>
+  <data name="Tooltip_CopySvg" xml:space="preserve">
+    <value>Copy SVG</value>
+  </data>
+  <data name="Tooltip_DownloadSvg" xml:space="preserve">
+    <value>Download SVG</value>
+  </data>
+  <data name="Tooltip_Fullscreen" xml:space="preserve">
+    <value>Fullscreen</value>
+  </data>
+  <data name="Tooltip_ExitFullscreen" xml:space="preserve">
+    <value>Exit Fullscreen</value>
+  </data>
+  <data name="Tooltip_OpenInMermaidLive" xml:space="preserve">
+    <value>Open in mermaid.live</value>
+  </data>
+  <data name="Status_Undo" xml:space="preserve">
+    <value>Last change undone.</value>
+  </data>
+  <data name="Status_SvgCopied" xml:space="preserve">
+    <value>SVG copied.</value>
+  </data>
+  <data name="Status_NoSvg" xml:space="preserve">
+    <value>No SVG available.</value>
+  </data>
+  <data name="Status_SvgDownloaded" xml:space="preserve">
+    <value>SVG downloaded.</value>
+  </data>
+  <data name="Status_FullscreenUnavailable" xml:space="preserve">
+    <value>Fullscreen not available.</value>
+  </data>
+  <data name="Status_NoDiagram" xml:space="preserve">
+    <value>No diagram for mermaid.live.</value>
+  </data>
+  <data name="Status_PopupBlocked" xml:space="preserve">
+    <value>Popup blocked.</value>
+  </data>
+  <data name="Status_CopyUnavailable" xml:space="preserve">
+    <value>Copy not available.</value>
+  </data>
+</root>

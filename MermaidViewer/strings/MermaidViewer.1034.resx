@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="MermaidViewer" xml:space="preserve">
+    <value>Mermaid Viewer (BenJohn)</value>
+  </data>
+  <data name="MermaidViewer description" xml:space="preserve">
+    <value>Visor y vista previa de diagramas Mermaid.</value>
+  </data>
+  <data name="Property_Display_Key" xml:space="preserve">
+    <value>Código del diagrama</value>
+  </data>
+  <data name="Property_Desc_Key" xml:space="preserve">
+    <value>Código de diagrama Mermaid.</value>
+  </data>
+  <data name="Tab_Diagram" xml:space="preserve">
+    <value>Diagrama</value>
+  </data>
+  <data name="Tab_Code" xml:space="preserve">
+    <value>Código</value>
+  </data>
+  <data name="Tooltip_Undo" xml:space="preserve">
+    <value>Deshacer</value>
+  </data>
+  <data name="Tooltip_CopySvg" xml:space="preserve">
+    <value>Copiar SVG</value>
+  </data>
+  <data name="Tooltip_DownloadSvg" xml:space="preserve">
+    <value>Descargar SVG</value>
+  </data>
+  <data name="Tooltip_Fullscreen" xml:space="preserve">
+    <value>Pantalla completa</value>
+  </data>
+  <data name="Tooltip_ExitFullscreen" xml:space="preserve">
+    <value>Salir de pantalla completa</value>
+  </data>
+  <data name="Tooltip_OpenInMermaidLive" xml:space="preserve">
+    <value>Abrir en mermaid.live</value>
+  </data>
+  <data name="Status_Undo" xml:space="preserve">
+    <value>Último cambio deshecho.</value>
+  </data>
+  <data name="Status_SvgCopied" xml:space="preserve">
+    <value>SVG copiado.</value>
+  </data>
+  <data name="Status_NoSvg" xml:space="preserve">
+    <value>No hay SVG disponible.</value>
+  </data>
+  <data name="Status_SvgDownloaded" xml:space="preserve">
+    <value>SVG descargado.</value>
+  </data>
+  <data name="Status_FullscreenUnavailable" xml:space="preserve">
+    <value>Pantalla completa no disponible.</value>
+  </data>
+  <data name="Status_NoDiagram" xml:space="preserve">
+    <value>No hay diagrama para mermaid.live.</value>
+  </data>
+  <data name="Status_PopupBlocked" xml:space="preserve">
+    <value>Ventana emergente bloqueada.</value>
+  </data>
+  <data name="Status_CopyUnavailable" xml:space="preserve">
+    <value>No se puede copiar.</value>
+  </data>
+</root>
