@@ -9,6 +9,8 @@ export interface IMermaidViewerProps {
   value: string;
   onChange: (nextValue: string) => void;
   strings: IMermaidViewerStrings;
+  entityName?: string;
+  entityId?: string;
 }
 
 type TabKey = "diagram" | "code";
@@ -18,16 +20,21 @@ export interface IMermaidViewerStrings {
   tabCode: string;
   tooltipUndo: string;
   tooltipCopySvg: string;
+  tooltipCopyCode: string;
   tooltipDownloadSvg: string;
+  tooltipDownloadCode: string;
   tooltipFullscreen: string;
   tooltipExitFullscreen: string;
   tooltipOpenInMermaidLive: string;
   statusUndo: string;
   statusSvgCopied: string;
+  statusCodeCopied: string;
   statusNoSvg: string;
   statusSvgDownloaded: string;
+  statusCodeDownloaded: string;
   statusFullscreenUnavailable: string;
   statusNoDiagram: string;
+  statusNoCode: string;
   statusPopupBlocked: string;
   statusCopyUnavailable: string;
 }
@@ -53,6 +60,8 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
   private renderIndex = 0;
   private isMermaidReady = false;
   private renderTimer: number | undefined;
+  private layoutRetryCount = 0;
+  private resizeObserver: ResizeObserver | null = null;
   private statusTimer: number | undefined;
   private lastRenderedValue = "";
   private lastRenderedSvg = "";
@@ -74,12 +83,30 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
     };
   }
 
+  private setupResizeObserver(): void {
+    if (typeof ResizeObserver === "undefined") {
+      return;
+    }
+    const preview = this.previewRef.current;
+    if (!preview) {
+      return;
+    }
+    this.resizeObserver = new ResizeObserver(() => {
+      if (this.state.activeTab === "diagram") {
+        this.renderWhenReady(this.props.value ?? "");
+      }
+    });
+    this.resizeObserver.observe(preview);
+  }
+
   public componentDidMount(): void {
+
     if (!this.isMermaidReady) {
       mermaid.initialize({ startOnLoad: false, securityLevel: "strict" });
       this.isMermaidReady = true;
     }
     document.addEventListener("fullscreenchange", this.handleFullscreenChange);
+    this.setupResizeObserver();
     this.scheduleRender(0, this.props.value);
   }
 
@@ -90,6 +117,7 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
     if (this.statusTimer) {
       window.clearTimeout(this.statusTimer);
     }
+    this.resizeObserver?.disconnect();
     document.removeEventListener("fullscreenchange", this.handleFullscreenChange);
   }
 
@@ -118,7 +146,12 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
       }
 
       if (this.state.activeTab === "diagram") {
-        this.scheduleRender(300, this.props.value);
+        const nextValue = this.props.value ?? "";
+        if (!this.state.hasSvg && nextValue.trim()) {
+          this.renderWhenReady(nextValue);
+        } else {
+          this.scheduleRender(300, nextValue);
+        }
       }
     }
 
@@ -136,6 +169,22 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
     }
   };
 
+  private renderWhenReady(value: string): void {
+    const preview = this.previewRef.current;
+    if (!preview) {
+      return;
+    }
+    const width = preview.clientWidth;
+    const height = preview.clientHeight;
+    if ((width === 0 || height === 0) && this.layoutRetryCount < 10) {
+      this.layoutRetryCount += 1;
+      window.setTimeout(() => this.renderWhenReady(value), 50);
+      return;
+    }
+    this.layoutRetryCount = 0;
+    void this.renderMermaid(value);
+  }
+
   private scheduleRender(delayMs: number, value: string): void {
     this.pendingRenderValue = value;
     if (this.renderTimer) {
@@ -144,7 +193,7 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
     this.renderTimer = window.setTimeout(() => {
       const source = this.pendingRenderValue ?? this.props.value;
       this.pendingRenderValue = null;
-      void this.renderMermaid(source);
+      this.renderWhenReady(source);
     }, delayMs);
   }
 
@@ -205,7 +254,7 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
     this.setState({ activeTab: nextTab }, () => {
       if (nextTab === "diagram") {
         if (this.previewRef.current) {
-          void this.renderMermaid(this.props.value);
+          this.renderWhenReady(this.props.value);
         } else {
           this.scheduleRender(0, this.props.value);
         }
@@ -261,6 +310,19 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
     return svgElement ? svgElement.outerHTML : "";
   }
 
+  private buildDownloadBase(): string {
+    const now = new Date();
+    const pad = (value: number): string => String(value).padStart(2, "0");
+    const timestamp = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}T${pad(
+      now.getHours()
+    )}${pad(now.getMinutes())}`;
+    const rawName = this.props.entityName || "entity";
+    const rawId = this.props.entityId || "unknown";
+    const safeName = rawName.replace(/[^A-Za-z0-9_.-]/g, "-");
+    const safeId = rawId.replace(/[^A-Za-z0-9_.-]/g, "-");
+    return `${timestamp} ${safeName}_${safeId}`;
+  }
+
   private async handleCopySvg(): Promise<void> {
     const svg = this.getCurrentSvgMarkup();
     if (!svg) {
@@ -292,6 +354,37 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
     );
   }
 
+  private async handleCopyCode(): Promise<void> {
+    const code = this.state.codeValue ?? "";
+    if (!code.trim()) {
+      this.setStatus(this.props.strings.statusNoCode, "error");
+      return;
+    }
+
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(code);
+        this.setStatus(this.props.strings.statusCodeCopied);
+        return;
+      }
+    } catch {
+      // fallback below
+    }
+
+    const fallback = document.createElement("textarea");
+    fallback.value = code;
+    fallback.style.position = "fixed";
+    fallback.style.opacity = "0";
+    document.body.appendChild(fallback);
+    fallback.select();
+    const success = document.execCommand("copy");
+    document.body.removeChild(fallback);
+    this.setStatus(
+      success ? this.props.strings.statusCodeCopied : this.props.strings.statusCopyUnavailable,
+      success ? "info" : "error"
+    );
+  }
+
   private handleDownloadSvg = (): void => {
     const svg = this.getCurrentSvgMarkup();
     if (!svg) {
@@ -301,11 +394,7 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
 
     const blob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
     const url = URL.createObjectURL(blob);
-    const now = new Date();
-    const pad = (value: number): string => String(value).padStart(2, "0");
-    const fileName = `mermaid-diagram-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(
-      now.getHours()
-    )}${pad(now.getMinutes())}.svg`;
+    const fileName = `${this.buildDownloadBase()}.svg`;
 
     const link = document.createElement("a");
     link.href = url;
@@ -313,6 +402,41 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
     link.click();
     URL.revokeObjectURL(url);
     this.setStatus(this.props.strings.statusSvgDownloaded);
+  };
+
+  private handleDownloadCode = (): void => {
+    const code = this.state.codeValue ?? "";
+    if (!code.trim()) {
+      this.setStatus(this.props.strings.statusNoCode, "error");
+      return;
+    }
+
+    const blob = new Blob([code], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const fileName = `${this.buildDownloadBase()}.mermaid`;
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = fileName;
+    link.click();
+    URL.revokeObjectURL(url);
+    this.setStatus(this.props.strings.statusCodeDownloaded);
+  };
+
+  private handleCopyCurrent = async (): Promise<void> => {
+    if (this.state.activeTab === "code") {
+      await this.handleCopyCode();
+    } else {
+      await this.handleCopySvg();
+    }
+  };
+
+  private handleDownloadCurrent = (): void => {
+    if (this.state.activeTab === "code") {
+      this.handleDownloadCode();
+    } else {
+      this.handleDownloadSvg();
+    }
   };
 
   private handleToggleFullscreen = async (): Promise<void> => {
@@ -423,9 +547,17 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
 
   public render(): React.ReactNode {
     const hasSvg = this.state.hasSvg;
+    const hasCode = Boolean(this.state.codeValue?.trim());
     const lineCount = Math.max(1, this.state.codeValue.split(/\r?\n/).length);
     const lineNumbers = Array.from({ length: lineCount }, (_value, index) => index + 1).join("\n");
     const theme = getTheme();
+    const isCodeTab = this.state.activeTab === "code";
+    const copyLabel = isCodeTab ? this.props.strings.tooltipCopyCode : this.props.strings.tooltipCopySvg;
+    const downloadLabel = isCodeTab
+      ? this.props.strings.tooltipDownloadCode
+      : this.props.strings.tooltipDownloadSvg;
+    const copyDisabled = isCodeTab ? !hasCode : !hasSvg;
+    const downloadDisabled = isCodeTab ? !hasCode : !hasSvg;
     const commandBarItems = [
       {
         key: "undo",
@@ -437,16 +569,16 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
       {
         key: "copy",
         iconName: "Copy",
-        onClick: () => void this.handleCopySvg(),
-        disabled: !hasSvg,
-        label: this.props.strings.tooltipCopySvg,
+        onClick: () => void this.handleCopyCurrent(),
+        disabled: copyDisabled,
+        label: copyLabel,
       },
       {
         key: "download",
         iconName: "Download",
-        onClick: this.handleDownloadSvg,
-        disabled: !hasSvg,
-        label: this.props.strings.tooltipDownloadSvg,
+        onClick: this.handleDownloadCurrent,
+        disabled: downloadDisabled,
+        label: downloadLabel,
       },
       {
         key: "fullscreen",
@@ -463,6 +595,16 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
         label: this.props.strings.tooltipOpenInMermaidLive,
       },
     ];
+    const codeKeys = new Set(["undo", "copy", "download", "fullscreen", "open"]);
+    const toolbarItems = isCodeTab
+      ? commandBarItems.filter((item) => codeKeys.has(item.key))
+      : commandBarItems;
+    const primaryItems = isCodeTab
+      ? toolbarItems.filter((item) => item.key === "undo")
+      : toolbarItems.slice(0, 1);
+    const secondaryItems = isCodeTab
+      ? toolbarItems.filter((item) => item.key !== "undo")
+      : toolbarItems.slice(1);
 
     return (
       <div
@@ -474,6 +616,12 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
           padding: "8px 10px",
           color: "#323130",
           background: "#ffffff",
+          width: "100%",
+          minWidth: 0,
+          height: "100%",
+          minHeight: 0,
+          flex: "1 1 auto",
+          boxSizing: "border-box",
         }}
       >
         <div
@@ -532,7 +680,7 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
             </div>
           </Stack>
           <div style={{ display: "flex", alignItems: "center" }}>
-            {commandBarItems.slice(0, 1).map((item) => (
+            {primaryItems.map((item) => (
               <TooltipHost content={item.label} key={item.key}>
                 <IconButton
                   iconProps={{ iconName: item.iconName }}
@@ -554,16 +702,18 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
                 />
               </TooltipHost>
             ))}
-            <div
-              style={{
-                width: 1,
-                height: 18,
-                marginLeft: 8,
-                marginRight: 2,
-                background: "#edebe9",
-              }}
-            />
-            {commandBarItems.slice(1).map((item) => (
+            {secondaryItems.length > 0 ? (
+              <div
+                style={{
+                  width: 1,
+                  height: 18,
+                  marginLeft: 8,
+                  marginRight: 2,
+                  background: "#edebe9",
+                }}
+              />
+            ) : null}
+            {secondaryItems.map((item) => (
               <TooltipHost content={item.label} key={item.key}>
                 <IconButton
                   iconProps={{ iconName: item.iconName }}
@@ -610,10 +760,12 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
               borderRadius: "6px",
               background: "#ffffff",
               border: "none",
-              height: "45vh",
-              minHeight: "280px",
-              maxHeight: "600px",
+              height: "100%",
+              minHeight: 0,
+              maxHeight: "none",
               overflow: "hidden",
+              width: "100%",
+              flex: "1 1 auto",
               boxSizing: "border-box",
             }}
           >
@@ -703,7 +855,7 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
             <div
               ref={this.previewRef}
               style={{
-                minHeight: "160px",
+                minHeight: 0,
                 borderRadius: "6px",
                 padding: "8px",
                 background: "#ffffff",
@@ -711,6 +863,9 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
+                overflow: this.state.isFullscreen ? "auto" : "visible",
+                width: "100%",
+                flex: "1 1 auto",
               }}
             />
             {this.state.error ? (

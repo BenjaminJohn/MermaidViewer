@@ -10,8 +10,7 @@
     "rebuild": "pcf-scripts rebuild",
     "start": "pcf-scripts start",
     "start:watch": "pcf-scripts start watch",
-    "refreshTypes": "pcf-scripts refreshTypes",
-    "postbuild": "node scripts/ensure-harness-assets.js"
+    "refreshTypes": "pcf-scripts refreshTypes"
   },
   "dependencies": {
     "@fluentui/react": "^8.123.6",

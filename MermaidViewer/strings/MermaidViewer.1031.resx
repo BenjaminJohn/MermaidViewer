@@ -24,8 +24,14 @@
   <data name="Tooltip_CopySvg" xml:space="preserve">
     <value>SVG kopieren</value>
   </data>
+  <data name="Tooltip_CopyCode" xml:space="preserve">
+    <value>Code kopieren</value>
+  </data>
   <data name="Tooltip_DownloadSvg" xml:space="preserve">
     <value>SVG herunterladen</value>
+  </data>
+  <data name="Tooltip_DownloadCode" xml:space="preserve">
+    <value>Code herunterladen</value>
   </data>
   <data name="Tooltip_Fullscreen" xml:space="preserve">
     <value>Vollbild</value>
@@ -42,17 +48,26 @@
   <data name="Status_SvgCopied" xml:space="preserve">
     <value>SVG kopiert.</value>
   </data>
+  <data name="Status_CodeCopied" xml:space="preserve">
+    <value>Code kopiert.</value>
+  </data>
   <data name="Status_NoSvg" xml:space="preserve">
     <value>Kein SVG verfügbar.</value>
   </data>
   <data name="Status_SvgDownloaded" xml:space="preserve">
     <value>SVG heruntergeladen.</value>
   </data>
+  <data name="Status_CodeDownloaded" xml:space="preserve">
+    <value>Code heruntergeladen.</value>
+  </data>
   <data name="Status_FullscreenUnavailable" xml:space="preserve">
     <value>Fullscreen nicht verfügbar.</value>
   </data>
   <data name="Status_NoDiagram" xml:space="preserve">
     <value>Kein Diagramm für mermaid.live.</value>
+  </data>
+  <data name="Status_NoCode" xml:space="preserve">
+    <value>Kein Code verfügbar.</value>
   </data>
   <data name="Status_PopupBlocked" xml:space="preserve">
     <value>Popup blockiert.</value>

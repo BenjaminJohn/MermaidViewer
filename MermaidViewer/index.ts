@@ -2,6 +2,9 @@ import { IInputs, IOutputs } from "./generated/ManifestTypes";
 import { IMermaidViewerProps, IMermaidViewerStrings, MermaidViewerView } from "./MermaidViewerView";
 import * as React from "react";
 
+const CONTROL_NAME = "MermaidViewer";
+const CONTROL_VERSION = "1.0.9";
+
 export class MermaidViewer implements ComponentFramework.ReactControl<IInputs, IOutputs> {
     private notifyOutputChanged: () => void;
     private localValue = "";
@@ -34,6 +37,7 @@ export class MermaidViewer implements ComponentFramework.ReactControl<IInputs, I
         state: ComponentFramework.Dictionary
     ): void {
         this.notifyOutputChanged = notifyOutputChanged;
+        console.info(`[${CONTROL_NAME}] version ${CONTROL_VERSION}`);
     }
 
     /**
@@ -60,16 +64,21 @@ export class MermaidViewer implements ComponentFramework.ReactControl<IInputs, I
             tabCode: "Code",
             tooltipUndo: "Undo",
             tooltipCopySvg: "Copy SVG",
+            tooltipCopyCode: "Copy code",
             tooltipDownloadSvg: "Download SVG",
+            tooltipDownloadCode: "Download code",
             tooltipFullscreen: "Fullscreen",
             tooltipExitFullscreen: "Exit Fullscreen",
             tooltipOpenInMermaidLive: "Open in mermaid.live",
             statusUndo: "Last change undone.",
             statusSvgCopied: "SVG copied.",
+            statusCodeCopied: "Code copied.",
             statusNoSvg: "No SVG available.",
             statusSvgDownloaded: "SVG downloaded.",
+            statusCodeDownloaded: "Code downloaded.",
             statusFullscreenUnavailable: "Fullscreen not available.",
             statusNoDiagram: "No diagram for mermaid.live.",
+            statusNoCode: "No code available.",
             statusPopupBlocked: "Popup blocked.",
             statusCopyUnavailable: "Copy not available.",
         };
@@ -92,24 +101,39 @@ export class MermaidViewer implements ComponentFramework.ReactControl<IInputs, I
             return value ? value : fallback;
         };
 
+
+    interface PageContext {
+        entityTypeName?: string;
+        entityId?: string;
+    };
+    const getPageContext = (ctx: ComponentFramework.Context<IInputs>): PageContext | null => {
+        const page = (ctx as { page?: PageContext }).page;
+        return page ?? null;
+    };
+
         const strings: IMermaidViewerStrings = {
             tabDiagram: getString("Tab_Diagram", enFallback.tabDiagram),
             tabCode: getString("Tab_Code", enFallback.tabCode),
             tooltipUndo: getString("Tooltip_Undo", enFallback.tooltipUndo),
             tooltipCopySvg: getString("Tooltip_CopySvg", enFallback.tooltipCopySvg),
+            tooltipCopyCode: getString("Tooltip_CopyCode", enFallback.tooltipCopyCode),
             tooltipDownloadSvg: getString("Tooltip_DownloadSvg", enFallback.tooltipDownloadSvg),
+            tooltipDownloadCode: getString("Tooltip_DownloadCode", enFallback.tooltipDownloadCode),
             tooltipFullscreen: getString("Tooltip_Fullscreen", enFallback.tooltipFullscreen),
             tooltipExitFullscreen: getString("Tooltip_ExitFullscreen", enFallback.tooltipExitFullscreen),
             tooltipOpenInMermaidLive: getString("Tooltip_OpenInMermaidLive", enFallback.tooltipOpenInMermaidLive),
             statusUndo: getString("Status_Undo", enFallback.statusUndo),
             statusSvgCopied: getString("Status_SvgCopied", enFallback.statusSvgCopied),
+            statusCodeCopied: getString("Status_CodeCopied", enFallback.statusCodeCopied),
             statusNoSvg: getString("Status_NoSvg", enFallback.statusNoSvg),
             statusSvgDownloaded: getString("Status_SvgDownloaded", enFallback.statusSvgDownloaded),
+            statusCodeDownloaded: getString("Status_CodeDownloaded", enFallback.statusCodeDownloaded),
             statusFullscreenUnavailable: getString(
                 "Status_FullscreenUnavailable",
                 enFallback.statusFullscreenUnavailable
             ),
             statusNoDiagram: getString("Status_NoDiagram", enFallback.statusNoDiagram),
+            statusNoCode: getString("Status_NoCode", enFallback.statusNoCode),
             statusPopupBlocked: getString("Status_PopupBlocked", enFallback.statusPopupBlocked),
             statusCopyUnavailable: getString("Status_CopyUnavailable", enFallback.statusCopyUnavailable),
         };
@@ -118,6 +142,8 @@ export class MermaidViewer implements ComponentFramework.ReactControl<IInputs, I
             value: this.localValue,
             onChange: this.handleChange,
             strings,
+            entityName: getPageContext(context)?.entityTypeName ?? undefined,
+            entityId: getPageContext(context)?.entityId ?? undefined,
         };
         return React.createElement(MermaidViewerView, props);
     }
@@ -138,3 +164,10 @@ export class MermaidViewer implements ComponentFramework.ReactControl<IInputs, I
         // Add code to cleanup control if necessary
     }
 }
+
+
+
+
+
+
+
