@@ -1,7 +1,7 @@
 import * as React from "react";
 import mermaid from "mermaid";
 import pako from "pako";
-import { getTheme, IconButton, initializeIcons, Stack, TooltipHost } from "@fluentui/react";
+import { IconButton, initializeIcons, Stack, TooltipHost } from "@fluentui/react";
 
 initializeIcons();
 
@@ -9,6 +9,7 @@ export interface IMermaidViewerProps {
   value: string;
   onChange: (nextValue: string) => void;
   strings: IMermaidViewerStrings;
+  tabAccentColor: string;
   entityName?: string;
   entityId?: string;
 }
@@ -550,7 +551,6 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
     const hasCode = Boolean(this.state.codeValue?.trim());
     const lineCount = Math.max(1, this.state.codeValue.split(/\r?\n/).length);
     const lineNumbers = Array.from({ length: lineCount }, (_value, index) => index + 1).join("\n");
-    const theme = getTheme();
     const isCodeTab = this.state.activeTab === "code";
     const copyLabel = isCodeTab ? this.props.strings.tooltipCopyCode : this.props.strings.tooltipCopySvg;
     const downloadLabel = isCodeTab
@@ -666,7 +666,7 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
                         letterSpacing: "0.4px",
                         paddingBottom: 2,
                         borderBottom: isActive
-                          ? `2px solid ${theme.palette.themePrimary}`
+                          ? `2px solid ${this.props.tabAccentColor}`
                           : "2px solid transparent",
                         borderRadius: 2,
                         fontWeight: isActive ? 600 : 400,

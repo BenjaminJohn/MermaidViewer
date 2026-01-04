@@ -3,7 +3,7 @@ import { IMermaidViewerProps, IMermaidViewerStrings, MermaidViewerView } from ".
 import * as React from "react";
 
 const CONTROL_NAME = "MermaidViewer";
-const CONTROL_VERSION = "1.0.9";
+const CONTROL_VERSION = "1.0.11";
 
 export class MermaidViewer implements ComponentFramework.ReactControl<IInputs, IOutputs> {
     private notifyOutputChanged: () => void;
@@ -111,6 +111,12 @@ export class MermaidViewer implements ComponentFramework.ReactControl<IInputs, I
         return page ?? null;
     };
 
+        const defaultTabAccentColor = "#0F6CBD";
+        const rawTabAccent = context.parameters.tabAccentColor?.raw ?? "";
+        const tabAccentColor = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(rawTabAccent)
+            ? rawTabAccent
+            : defaultTabAccentColor;
+
         const strings: IMermaidViewerStrings = {
             tabDiagram: getString("Tab_Diagram", enFallback.tabDiagram),
             tabCode: getString("Tab_Code", enFallback.tabCode),
@@ -142,6 +148,7 @@ export class MermaidViewer implements ComponentFramework.ReactControl<IInputs, I
             value: this.localValue,
             onChange: this.handleChange,
             strings,
+            tabAccentColor,
             entityName: getPageContext(context)?.entityTypeName ?? undefined,
             entityId: getPageContext(context)?.entityId ?? undefined,
         };
@@ -164,6 +171,8 @@ export class MermaidViewer implements ComponentFramework.ReactControl<IInputs, I
         // Add code to cleanup control if necessary
     }
 }
+
+
 
 
 

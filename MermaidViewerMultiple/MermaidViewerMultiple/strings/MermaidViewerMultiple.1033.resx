@@ -12,6 +12,12 @@
   <data name="Property_Desc_Key" xml:space="preserve">
     <value>Mermaid diagram code.</value>
   </data>
+  <data name="Property_TabAccent_Display_Key" xml:space="preserve">
+    <value>Tab accent color</value>
+  </data>
+  <data name="Property_TabAccent_Desc_Key" xml:space="preserve">
+    <value>Hex color for the active tab underline (e.g. #0F6CBD).</value>
+  </data>
   <data name="Tab_Diagram" xml:space="preserve">
     <value>Diagram</value>
   </data>
