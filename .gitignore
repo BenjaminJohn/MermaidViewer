@@ -21,3 +21,20 @@
 
 # macos
 .DS_Store
+
+# logs
+*.log
+
+# local env files / secrets
+.env
+.env.*
+
+# test coverage
+/coverage
+
+# editor (nur wenn ihr keine gemeinsamen VS Code Settings versioniert)
+.vscode/
+
+# user-specific files
+*.user
+*.suo

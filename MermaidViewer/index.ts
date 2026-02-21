@@ -3,7 +3,7 @@ import { IMermaidViewerProps, IMermaidViewerStrings, MermaidViewerView } from ".
 import * as React from "react";
 
 const CONTROL_NAME = "MermaidViewer";
-const CONTROL_VERSION = "1.0.11";
+const CONTROL_VERSION = "1.0.15";
 
 export class MermaidViewer implements ComponentFramework.ReactControl<IInputs, IOutputs> {
     private notifyOutputChanged: () => void;
@@ -171,6 +171,10 @@ export class MermaidViewer implements ComponentFramework.ReactControl<IInputs, I
         // Add code to cleanup control if necessary
     }
 }
+
+
+
+
 
 
 

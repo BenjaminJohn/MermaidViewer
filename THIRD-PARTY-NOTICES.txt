@@ -1,0 +1,18 @@
+THIRD-PARTY NOTICES
+
+This project includes the following third-party software. License texts are located in ThirdPartyLicenses/ and must be included in distributions.
+
+- mermaid
+  - Version: 11.12.2
+  - License: MIT
+  - License file: ThirdPartyLicenses/mermaid.LICENSE.txt
+
+- @fluentui/react
+  - Version: 8.125.3
+  - License: MIT
+  - License file: ThirdPartyLicenses/fluentui-react.LICENSE.txt
+
+- pako
+  - Version: 2.1.0
+  - License: (MIT AND Zlib)
+  - License file: ThirdPartyLicenses/pako.LICENSE.txt

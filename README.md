@@ -4,8 +4,8 @@ PCF controls to render Mermaid diagrams from Dataverse text fields.
 
 ## Controls
 
-- `MermaidViewer` (SingleLine.TextArea)
-- `MermaidViewerMultiple` (Multiple)
+- `MermaidViewer` Single line of text (Text Area)
+- `MermaidViewerMultiple` Multiple lines of text
 
 
 ## Local vs. Dataverse Testing
@@ -66,3 +66,9 @@ Optional (explicit version):
 ```powershell
 pwsh ./scripts/version-and-build.ps1 -Version 1.0.20260104.1800
 ```
+
+
+## Licensing / Third-Party Notices
+
+Third-party license texts are located in `ThirdPartyLicenses/` and must be included in distributions.
+See `THIRD-PARTY-NOTICES.txt` for the list of dependencies and versions.

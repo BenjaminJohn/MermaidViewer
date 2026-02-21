@@ -72,7 +72,7 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
   constructor(props: IMermaidViewerProps) {
     super(props);
     this.state = {
-      activeTab: "diagram",
+      activeTab: (props.value ?? "").trim() ? "diagram" : "code",
       error: null,
       statusMessage: null,
       statusIntent: "info",
@@ -595,10 +595,13 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
         label: this.props.strings.tooltipOpenInMermaidLive,
       },
     ];
+    const visibleItems = this.state.canUndo
+      ? commandBarItems
+      : commandBarItems.filter((item) => item.key !== "undo");
     const codeKeys = new Set(["undo", "copy", "download", "fullscreen", "open"]);
     const toolbarItems = isCodeTab
-      ? commandBarItems.filter((item) => codeKeys.has(item.key))
-      : commandBarItems;
+      ? visibleItems.filter((item) => codeKeys.has(item.key))
+      : visibleItems;
     const primaryItems = isCodeTab
       ? toolbarItems.filter((item) => item.key === "undo")
       : toolbarItems.slice(0, 1);
@@ -658,21 +661,23 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
                     }}
                   >
                     <span
+                      className={`mv-tab-label${isActive ? " is-active" : ""}`}
                       style={{
                         display: "inline-block",
                         fontSize: 14,
                         lineHeight: "14px",
                         textTransform: "uppercase",
                         letterSpacing: "0.4px",
-                        paddingBottom: 2,
-                        borderBottom: isActive
-                          ? `2px solid ${this.props.tabAccentColor}`
-                          : "2px solid transparent",
-                        borderRadius: 2,
+                        paddingBottom: 8,
                         fontWeight: isActive ? 600 : 400,
+                        position: "relative",
                       }}
                     >
                       {tab.label}
+                      <span
+                        className="mv-tab-underline"
+                        style={{ background: this.props.tabAccentColor }}
+                      />
                     </span>
                   </button>
                 );
@@ -692,27 +697,16 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
                       marginLeft: 4,
                       height: 24,
                       width: 24,
-                      borderRadius: 2,
+                      borderRadius: 4,
                     },
                     flexContainer: { alignItems: "center", justifyContent: "center", height: "100%" },
-                    rootHovered: { background: "#F5F5F5" },
+                    rootHovered: { background: "#F5F5F5", borderRadius: 4 },
                     rootDisabled: { opacity: 0.45 },
                     icon: { fontSize: 16, color: "#242424" },
                   }}
                 />
               </TooltipHost>
             ))}
-            {secondaryItems.length > 0 ? (
-              <div
-                style={{
-                  width: 1,
-                  height: 18,
-                  marginLeft: 8,
-                  marginRight: 2,
-                  background: "#edebe9",
-                }}
-              />
-            ) : null}
             {secondaryItems.map((item) => (
               <TooltipHost content={item.label} key={item.key}>
                 <IconButton
@@ -725,10 +719,10 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
                       marginLeft: 4,
                       height: 24,
                       width: 24,
-                      borderRadius: 2,
+                      borderRadius: 4,
                     },
                     flexContainer: { alignItems: "center", justifyContent: "center", height: "100%" },
-                    rootHovered: { background: "#F5F5F5" },
+                    rootHovered: { background: "#F5F5F5", borderRadius: 4 },
                     rootDisabled: { opacity: 0.45 },
                     icon: { fontSize: 16, color: "#242424" },
                   }}
@@ -737,6 +731,23 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
             ))}
           </div>
         </div>
+
+            <style>
+              {`
+                .mv-tab-label { display: inline-block; }
+                .mv-tab-underline {
+                  position: absolute;
+                  left: 0;
+                  right: 0;
+                  bottom: 0;
+                  height: 3px;
+                  border-radius: 2px;
+                  opacity: 0;
+                  transition: opacity 120ms ease-in-out;
+                }
+                .mv-tab-label.is-active .mv-tab-underline { opacity: 1; }
+              `}
+            </style>
 
         {this.state.statusMessage ? (
           <div
