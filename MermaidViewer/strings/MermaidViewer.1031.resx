@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <data name="MermaidViewer" xml:space="preserve">
     <value>Mermaid Viewer (BenJohn)</value>
   </data>
   <data name="MermaidViewer description" xml:space="preserve">
-    <value>Mermaid-Diagramm-Viewer mit Vorschau.</value>
+    <value>Mermaid-Diagramm-Viewer mit Vorschau. (v1.18.0)</value>
   </data>
   <data name="Property_Display_Key" xml:space="preserve">
     <value>Diagrammcode</value>

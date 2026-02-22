@@ -468,16 +468,16 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
 
     const payloadObject = {
       code: source,
-      mermaid: { theme: "default" },
-      autoSync: true,
+      mermaid: JSON.stringify({ theme: "default" }),
       updateDiagram: true,
-      editorMode: "code",
+      rough: false,
+      panZoom: true,
     };
     const payloadJson = JSON.stringify(payloadObject);
     const encoder = new TextEncoder();
     const compressed = pako.deflate(encoder.encode(payloadJson), { level: 9 });
     const payload = this.toBase64Url(compressed);
-    const url = `https://mermaid.live/edit#pako:${payload}`;
+    const url = `https://mermaid.ai/play#pako:${payload}`;
     const opened = window.open(url, "_blank", "noopener,noreferrer");
     if (!opened) {
       this.setStatus(this.props.strings.statusPopupBlocked, "error");

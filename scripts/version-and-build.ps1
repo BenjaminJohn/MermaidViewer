@@ -49,24 +49,36 @@ $resolvedControlVersion = $null
 if ($ControlVersion) {
   $resolvedControlVersion = $ControlVersion
 } else {
-  $firstManifestPath = $controlManifestPaths[0]
-  if (-not (Test-Path $firstManifestPath)) {
-    throw "ControlManifest.Input.xml not found: $firstManifestPath"
+  $cMajor = $null
+  $cMinor = $null
+
+  if ($Major -and $Minor) {
+    $cMajor = $Major
+    $cMinor = $Minor
+  } elseif ($Version -match '^(\d+)\.(\d+)\.') {
+    $cMajor = [int]$Matches[1]
+    $cMinor = [int]$Matches[2]
+  } else {
+    $firstManifestPath = $controlManifestPaths[0]
+    if (-not (Test-Path $firstManifestPath)) {
+      throw "ControlManifest.Input.xml not found: $firstManifestPath"
+    }
+    $firstManifestXml = [xml](Get-Content $firstManifestPath)
+    $currentControlVersion = $firstManifestXml.manifest.control.version
+    if (-not $currentControlVersion) {
+      $currentControlVersion = "1.0.1"
+    }
+    $cParts = $currentControlVersion.Split(".")
+    if ($cParts.Length -ge 2) {
+      $cMajor = [int]$cParts[0]
+      $cMinor = [int]$cParts[1]
+    } else {
+      $cMajor = 1
+      $cMinor = 0
+    }
   }
-  $firstManifestXml = [xml](Get-Content $firstManifestPath)
-  $currentControlVersion = $firstManifestXml.manifest.control.version
-  if (-not $currentControlVersion) {
-    $currentControlVersion = "1.0.1"
-  }
-  $parts = $currentControlVersion.Split(".")
-  if ($parts.Length -ne 3) {
-    $parts = @("1", "0", "1")
-  }
-  $cMajor = [int]$parts[0]
-  $cMinor = [int]$parts[1]
-  $cPatch = [int]$parts[2]
-  $cPatch = $cPatch + 1
-  $resolvedControlVersion = "$cMajor.$cMinor.$cPatch"
+
+  $resolvedControlVersion = "$cMajor.$cMinor.0"
 }
 
 foreach ($indexPath in $indexPaths) {
@@ -74,7 +86,11 @@ foreach ($indexPath in $indexPaths) {
     throw "index.ts not found: $indexPath"
   }
   $indexContent = Get-Content $indexPath -Raw
-  $indexUpdated = [regex]::Replace($indexContent, '(const\s+CONTROL_VERSION\s*=\s+")[^"]+(";)', { param($m) "$($m.Groups[1].Value)$resolvedControlVersion$($m.Groups[2].Value)" })
+  $indexUpdated = [regex]::Replace(
+    $indexContent,
+    '(const\s+CONTROL_VERSION\s*=\s+")[^"]+(";)',
+    { param($m) "$($m.Groups[1].Value)$resolvedControlVersion$($m.Groups[2].Value)" }
+  )
   Set-Content -Path $indexPath -Value $indexUpdated -Encoding UTF8
 }
 
@@ -82,16 +98,54 @@ foreach ($manifestPath in $controlManifestPaths) {
   if (-not (Test-Path $manifestPath)) {
     throw "ControlManifest.Input.xml not found: $manifestPath"
   }
+
   $manifestXml = [xml](Get-Content $manifestPath)
   $controlNode = $manifestXml.manifest.control
   if (-not $controlNode) {
     throw "<control> node not found in $manifestPath"
   }
+
   $controlNode.SetAttribute("version", $resolvedControlVersion)
+  $descriptionKey = $controlNode.GetAttribute("description-key")
+  $manifestDir = Split-Path -Parent $manifestPath
+
+  if ($descriptionKey) {
+    foreach ($resxNode in $manifestXml.manifest.control.resources.resx) {
+      $resxRelPath = $resxNode.path
+      if (-not $resxRelPath) {
+        continue
+      }
+      $resxAbsPath = Join-Path $manifestDir $resxRelPath
+      if (-not (Test-Path $resxAbsPath)) {
+        continue
+      }
+
+      $resxXml = [xml](Get-Content $resxAbsPath)
+      $dataNode = $resxXml.root.data | Where-Object { $_.name -eq $descriptionKey } | Select-Object -First 1
+      if (-not $dataNode) {
+        continue
+      }
+
+      $valueNode = $dataNode.SelectSingleNode("value")
+      if (-not $valueNode) {
+        continue
+      }
+
+      $currentText = $valueNode.InnerText
+      $baseText = [regex]::Replace($currentText, '\s*\(v\d+\.\d+\.\d+\)$', '')
+      if (-not $baseText) {
+        continue
+      }
+      $valueNode.InnerText = "$baseText (v$resolvedControlVersion)"
+      $resxXml.Save($resxAbsPath)
+    }
+  }
+
   $manifestXml.Save($manifestPath)
 }
 
-Write-Host "Version set to $Version"
+Write-Host "Solution version set to $Version"
+Write-Host "Control version set to $resolvedControlVersion"
 
 $solutionsDir = Join-Path $projectRoot "Solutions"
 $managedOut = Join-Path $solutionsDir "bin" | Join-Path -ChildPath $Configuration | Join-Path -ChildPath "MermaidViewer_managed.zip"
