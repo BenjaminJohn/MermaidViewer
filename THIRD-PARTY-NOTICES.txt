@@ -3,7 +3,7 @@ THIRD-PARTY NOTICES
 This project includes the following third-party software. License texts are located in ThirdPartyLicenses/ and must be included in distributions.
 
 - mermaid
-  - Version: 11.12.2
+  - Version: 11.12.3
   - License: MIT
   - License file: ThirdPartyLicenses/mermaid.LICENSE.txt
 

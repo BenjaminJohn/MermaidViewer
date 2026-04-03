@@ -4,13 +4,13 @@
     <value>Mermaid Viewer (BenJohn) - Multiple</value>
   </data>
   <data name="MermaidViewerMultiple description" xml:space="preserve">
-    <value>Mermaid-Diagramm-Viewer mit Vorschau. (Multiple) (v1.18.0)</value>
+    <value>Visualizzatore e anteprima di diagrammi Mermaid. (Multiple) (v1.18.0)</value>
   </data>
   <data name="Property_Display_Key" xml:space="preserve">
-    <value>Diagrammcode</value>
+    <value>Codice diagramma</value>
   </data>
   <data name="Property_Desc_Key" xml:space="preserve">
-    <value>Mermaid-Diagrammcode.</value>
+    <value>Codice del diagramma Mermaid.</value>
   </data>
   <data name="Property_TabAccent_Display_Key" xml:space="preserve">
     <value>Tab accent color</value>
@@ -18,67 +18,79 @@
   <data name="Property_TabAccent_Desc_Key" xml:space="preserve">
     <value>Hex color for the active tab underline (e.g. #0F6CBD).</value>
   </data>
+  <data name="Property_ReadOnly_Display_Key" xml:space="preserve">
+    <value>Sola lettura</value>
+  </data>
+  <data name="Property_ReadOnly_Desc_Key" xml:space="preserve">
+    <value>Nascondere l'editor di codice e impedire le modifiche.</value>
+  </data>
   <data name="Tab_Diagram" xml:space="preserve">
-    <value>Diagramm</value>
+    <value>Diagramma</value>
   </data>
   <data name="Tab_Code" xml:space="preserve">
-    <value>Code</value>
+    <value>Codice</value>
   </data>
   <data name="Tooltip_Undo" xml:space="preserve">
-    <value>Rückgängig</value>
+    <value>Annulla</value>
+  </data>
+  <data name="Tooltip_Redo" xml:space="preserve">
+    <value>Ripeti</value>
   </data>
   <data name="Tooltip_CopySvg" xml:space="preserve">
-    <value>SVG kopieren</value>
+    <value>Copia SVG</value>
   </data>
   <data name="Tooltip_CopyCode" xml:space="preserve">
-    <value>Code kopieren</value>
+    <value>Copia codice</value>
   </data>
   <data name="Tooltip_DownloadSvg" xml:space="preserve">
-    <value>SVG herunterladen</value>
+    <value>Scarica SVG</value>
   </data>
   <data name="Tooltip_DownloadCode" xml:space="preserve">
-    <value>Code herunterladen</value>
+    <value>Scarica codice</value>
   </data>
   <data name="Tooltip_Fullscreen" xml:space="preserve">
-    <value>Vollbild</value>
+    <value>Schermo intero</value>
   </data>
   <data name="Tooltip_ExitFullscreen" xml:space="preserve">
-    <value>Vollbild beenden</value>
+    <value>Esci da schermo intero</value>
   </data>
   <data name="Tooltip_OpenInMermaidLive" xml:space="preserve">
-    <value>In mermaid.live öffnen</value>
+    <value>Apri in mermaid.live</value>
   </data>
   <data name="Status_Undo" xml:space="preserve">
-    <value>Letzte Änderung rückgängig gemacht.</value>
+    <value>Ultima modifica annullata.</value>
+  </data>
+  <data name="Status_Redo" xml:space="preserve">
+    <value>Ultima modifica ripetuta.</value>
   </data>
   <data name="Status_SvgCopied" xml:space="preserve">
-    <value>SVG kopiert.</value>
+    <value>SVG copiato.</value>
   </data>
   <data name="Status_CodeCopied" xml:space="preserve">
-    <value>Code kopiert.</value>
+    <value>Codice copiato.</value>
   </data>
   <data name="Status_NoSvg" xml:space="preserve">
-    <value>Kein SVG verfügbar.</value>
+    <value>Nessun SVG disponibile.</value>
   </data>
   <data name="Status_SvgDownloaded" xml:space="preserve">
-    <value>SVG heruntergeladen.</value>
+    <value>SVG scaricato.</value>
   </data>
   <data name="Status_CodeDownloaded" xml:space="preserve">
-    <value>Code heruntergeladen.</value>
+    <value>Codice scaricato.</value>
   </data>
   <data name="Status_FullscreenUnavailable" xml:space="preserve">
-    <value>Fullscreen nicht verfügbar.</value>
+    <value>Schermo intero non disponibile.</value>
   </data>
   <data name="Status_NoDiagram" xml:space="preserve">
-    <value>Kein Diagramm für mermaid.live.</value>
+    <value>Nessun diagramma per mermaid.live.</value>
   </data>
   <data name="Status_NoCode" xml:space="preserve">
-    <value>Kein Code verfügbar.</value>
+    <value>Nessun codice disponibile.</value>
   </data>
   <data name="Status_PopupBlocked" xml:space="preserve">
-    <value>Popup blockiert.</value>
+    <value>Popup bloccato.</value>
   </data>
   <data name="Status_CopyUnavailable" xml:space="preserve">
-    <value>Kopieren nicht möglich.</value>
+    <value>Copia non disponibile.</value>
   </data>
 </root>

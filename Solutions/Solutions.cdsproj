@@ -50,7 +50,6 @@
   
   <ItemGroup>
     <ProjectReference Include="../MermaidViewer.pcfproj" />
-    <ProjectReference Include="../MermaidViewerMultiple/MermaidViewerMultiple.pcfproj" />
   </ItemGroup>
 
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />

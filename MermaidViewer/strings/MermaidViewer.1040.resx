@@ -18,6 +18,12 @@
   <data name="Property_TabAccent_Desc_Key" xml:space="preserve">
     <value>Hex color for the active tab underline (e.g. #0F6CBD).</value>
   </data>
+  <data name="Property_ReadOnly_Display_Key" xml:space="preserve">
+    <value>Sola lettura</value>
+  </data>
+  <data name="Property_ReadOnly_Desc_Key" xml:space="preserve">
+    <value>Nascondere l'editor di codice e impedire le modifiche.</value>
+  </data>
   <data name="Tab_Diagram" xml:space="preserve">
     <value>Diagramma</value>
   </data>
@@ -26,6 +32,9 @@
   </data>
   <data name="Tooltip_Undo" xml:space="preserve">
     <value>Annulla</value>
+  </data>
+  <data name="Tooltip_Redo" xml:space="preserve">
+    <value>Ripeti</value>
   </data>
   <data name="Tooltip_CopySvg" xml:space="preserve">
     <value>Copia SVG</value>
@@ -50,6 +59,9 @@
   </data>
   <data name="Status_Undo" xml:space="preserve">
     <value>Ultima modifica annullata.</value>
+  </data>
+  <data name="Status_Redo" xml:space="preserve">
+    <value>Ultima modifica ripetuta.</value>
   </data>
   <data name="Status_SvgCopied" xml:space="preserve">
     <value>SVG copiato.</value>

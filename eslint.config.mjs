@@ -7,7 +7,7 @@ import typescriptEslint from "typescript-eslint";
 /** @type {import('eslint').Linter.Config[]} */
 export default [
   {
-    ignores: ["**/generated/**", "**/out/**", "**/*.mjs", "MermaidViewerMultiple/**"],
+    ignores: ["**/generated/**", "**/out/**", "**/*.mjs"],
   },
   eslintjs.configs.recommended,
   ...typescriptEslint.configs.recommended,

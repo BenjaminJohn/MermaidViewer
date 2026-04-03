@@ -11,11 +11,11 @@ $projectRoot = Split-Path -Parent $PSScriptRoot
 $solutionXmlPath = Join-Path $projectRoot "Solutions/src/Other/Solution.xml"
 $controlManifestPaths = @(
   (Join-Path $projectRoot "MermaidViewer/ControlManifest.Input.xml"),
-  (Join-Path $projectRoot "MermaidViewerMultiple/MermaidViewerMultiple/ControlManifest.Input.xml")
+  (Join-Path $projectRoot "MermaidViewerMultiple/ControlManifest.Input.xml")
 )
 $indexPaths = @(
   (Join-Path $projectRoot "MermaidViewer/index.ts"),
-  (Join-Path $projectRoot "MermaidViewerMultiple/MermaidViewerMultiple/index.ts")
+  (Join-Path $projectRoot "MermaidViewerMultiple/index.ts")
 )
 
 if (-not (Test-Path $solutionXmlPath)) {

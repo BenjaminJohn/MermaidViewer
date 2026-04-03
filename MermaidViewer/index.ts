@@ -1,5 +1,5 @@
 import { IInputs, IOutputs } from "./generated/ManifestTypes";
-import { IMermaidViewerProps, IMermaidViewerStrings, MermaidViewerView } from "./MermaidViewerView";
+import { IMermaidViewerProps, IMermaidViewerStrings, MermaidViewerView } from "../shared/MermaidViewerView";
 import * as React from "react";
 
 const CONTROL_NAME = "MermaidViewer";
@@ -63,6 +63,7 @@ export class MermaidViewer implements ComponentFramework.ReactControl<IInputs, I
             tabDiagram: "Diagram",
             tabCode: "Code",
             tooltipUndo: "Undo",
+            tooltipRedo: "Redo",
             tooltipCopySvg: "Copy SVG",
             tooltipCopyCode: "Copy code",
             tooltipDownloadSvg: "Download SVG",
@@ -71,6 +72,7 @@ export class MermaidViewer implements ComponentFramework.ReactControl<IInputs, I
             tooltipExitFullscreen: "Exit Fullscreen",
             tooltipOpenInMermaidLive: "Open in mermaid.live",
             statusUndo: "Last change undone.",
+            statusRedo: "Last change redone.",
             statusSvgCopied: "SVG copied.",
             statusCodeCopied: "Code copied.",
             statusNoSvg: "No SVG available.",
@@ -121,6 +123,7 @@ export class MermaidViewer implements ComponentFramework.ReactControl<IInputs, I
             tabDiagram: getString("Tab_Diagram", enFallback.tabDiagram),
             tabCode: getString("Tab_Code", enFallback.tabCode),
             tooltipUndo: getString("Tooltip_Undo", enFallback.tooltipUndo),
+            tooltipRedo: getString("Tooltip_Redo", enFallback.tooltipRedo),
             tooltipCopySvg: getString("Tooltip_CopySvg", enFallback.tooltipCopySvg),
             tooltipCopyCode: getString("Tooltip_CopyCode", enFallback.tooltipCopyCode),
             tooltipDownloadSvg: getString("Tooltip_DownloadSvg", enFallback.tooltipDownloadSvg),
@@ -129,6 +132,7 @@ export class MermaidViewer implements ComponentFramework.ReactControl<IInputs, I
             tooltipExitFullscreen: getString("Tooltip_ExitFullscreen", enFallback.tooltipExitFullscreen),
             tooltipOpenInMermaidLive: getString("Tooltip_OpenInMermaidLive", enFallback.tooltipOpenInMermaidLive),
             statusUndo: getString("Status_Undo", enFallback.statusUndo),
+            statusRedo: getString("Status_Redo", enFallback.statusRedo),
             statusSvgCopied: getString("Status_SvgCopied", enFallback.statusSvgCopied),
             statusCodeCopied: getString("Status_CodeCopied", enFallback.statusCodeCopied),
             statusNoSvg: getString("Status_NoSvg", enFallback.statusNoSvg),
@@ -149,6 +153,7 @@ export class MermaidViewer implements ComponentFramework.ReactControl<IInputs, I
             onChange: this.handleChange,
             strings,
             tabAccentColor,
+            readOnly: context.mode.isControlDisabled || (context.parameters.readOnly?.raw ?? false),
             entityName: getPageContext(context)?.entityTypeName ?? undefined,
             entityId: getPageContext(context)?.entityId ?? undefined,
         };
@@ -171,7 +176,6 @@ export class MermaidViewer implements ComponentFramework.ReactControl<IInputs, I
         // Add code to cleanup control if necessary
     }
 }
-
 
 
 

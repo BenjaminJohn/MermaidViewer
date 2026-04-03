@@ -9,36 +9,19 @@ PCF controls to render Mermaid diagrams from Dataverse text fields.
   
   <img src="docs/screenshots/datatypes.png" alt="possible data types" width="300"  />
 
-## Local vs. Dataverse Testing
+## Features
 
-Local testing uses the PCF harness (``npm start watch``).  
-Solution ZIP files are for import into Dataverse (Power Platform).
-
-## Build and Run (Harness)
-
-Run in repository root for MermaidViewer or in subfolder for MermaidViewerMultiple:
-```powershell
-npm run clean
-npm start watch
-```
-
-## Build Solution Packages
-From the Solutions folder:
-```powershell
-dotnet msbuild Solutions.cdsproj /t:build /p:Configuration=Release /p:SolutionPackageType=Managed
-dotnet msbuild Solutions.cdsproj /t:build /p:Configuration=Release /p:SolutionPackageType=Unmanaged
-```
-
-## Version + Build (All-in-One)
-From repository root:
-```powershell
-pwsh ./scripts/version-and-build.ps1
-```
-Optional for new Version:
-```powershell
-pwsh ./scripts/version-and-build.ps1 -Major 1 -Minor 0
-pwsh ./scripts/version-and-build.ps1 -Version 1.0.20260104.1800
-```
+- **Diagram tab** — live rendering of the Mermaid diagram
+- **Code tab** — editor with syntax highlighting and line numbers (hidden in read-only mode)
+- **Zoom & Pan** — mouse wheel to zoom, drag to pan the diagram
+- **Double-click** — resets diagram to fit the container
+- **Fullscreen** — available for both the diagram and code tab
+- **Undo / Redo** — up to 50 steps
+- **Copy** — copies SVG markup or Mermaid code depending on the active tab
+- **Download** — saves the diagram as `.svg` or the code as `.mermaid`, filename includes timestamp and record name
+- **Open in mermaid.live** — opens the current diagram in the Mermaid Live Editor in a new tab
+- **Read-only mode** — set via the `readOnly` property or the form's disabled state; hides the code tab
+- **Error display** — shows a message when the Mermaid code cannot be parsed
 
 ## Import into Dataverse
   1. Build managed/unmanaged ZIP packages or use the ones from the 'Solutions/bin/release/ Folder from this Repo.

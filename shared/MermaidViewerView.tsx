@@ -12,6 +12,7 @@ export interface IMermaidViewerProps {
   tabAccentColor: string;
   entityName?: string;
   entityId?: string;
+  readOnly?: boolean;
 }
 
 type TabKey = "diagram" | "code";
@@ -20,6 +21,7 @@ export interface IMermaidViewerStrings {
   tabDiagram: string;
   tabCode: string;
   tooltipUndo: string;
+  tooltipRedo: string;
   tooltipCopySvg: string;
   tooltipCopyCode: string;
   tooltipDownloadSvg: string;
@@ -28,6 +30,7 @@ export interface IMermaidViewerStrings {
   tooltipExitFullscreen: string;
   tooltipOpenInMermaidLive: string;
   statusUndo: string;
+  statusRedo: string;
   statusSvgCopied: string;
   statusCodeCopied: string;
   statusNoSvg: string;
@@ -45,11 +48,14 @@ interface IMermaidViewerState {
   error: string | null;
   statusMessage: string | null;
   statusIntent: "info" | "error";
-  canUndo: boolean;
-  lastValueBeforeEdit: string;
+  history: string[];
+  historyIndex: number;
   isFullscreen: boolean;
   hasSvg: boolean;
   codeValue: string;
+  zoom: number;
+  panX: number;
+  panY: number;
 }
 
 export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMermaidViewerState> {
@@ -58,12 +64,19 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
   private codeContainerRef = React.createRef<HTMLDivElement>();
   private lineNumberRef = React.createRef<HTMLPreElement>();
   private previewRef = React.createRef<HTMLDivElement>();
+  private svgContainerRef = React.createRef<HTMLDivElement>();
+  private isDragging = false;
+  private dragStartX = 0;
+  private dragStartY = 0;
+  private dragStartPanX = 0;
+  private dragStartPanY = 0;
   private renderIndex = 0;
   private isMermaidReady = false;
   private renderTimer: number | undefined;
   private layoutRetryCount = 0;
   private resizeObserver: ResizeObserver | null = null;
   private statusTimer: number | undefined;
+  private historyTimer: number | undefined;
   private lastRenderedValue = "";
   private lastRenderedSvg = "";
   private pendingRenderValue: string | null = null;
@@ -72,15 +85,18 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
   constructor(props: IMermaidViewerProps) {
     super(props);
     this.state = {
-      activeTab: (props.value ?? "").trim() ? "diagram" : "code",
+      activeTab: (props.readOnly || (props.value ?? "").trim()) ? "diagram" : "code",
       error: null,
       statusMessage: null,
       statusIntent: "info",
-      canUndo: false,
-      lastValueBeforeEdit: props.value ?? "",
+      history: [props.value ?? ""],
+      historyIndex: 0,
       isFullscreen: false,
       hasSvg: false,
       codeValue: props.value ?? "",
+      zoom: 1,
+      panX: 0,
+      panY: 0,
     };
   }
 
@@ -107,6 +123,7 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
       this.isMermaidReady = true;
     }
     document.addEventListener("fullscreenchange", this.handleFullscreenChange);
+    this.previewRef.current?.addEventListener("wheel", this.handleWheel, { passive: false });
     this.setupResizeObserver();
     this.scheduleRender(0, this.props.value);
   }
@@ -118,6 +135,10 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
     if (this.statusTimer) {
       window.clearTimeout(this.statusTimer);
     }
+    if (this.historyTimer) {
+      window.clearTimeout(this.historyTimer);
+    }
+    this.previewRef.current?.removeEventListener("wheel", this.handleWheel);
     this.resizeObserver?.disconnect();
     document.removeEventListener("fullscreenchange", this.handleFullscreenChange);
   }
@@ -131,19 +152,15 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
           this.setState({ codeValue: this.props.value });
         }
       } else {
-        const nextState: Partial<IMermaidViewerState> = {};
-        if (this.state.canUndo) {
-          nextState.canUndo = false;
+        const newValue = this.props.value ?? "";
+        const nextState: Partial<IMermaidViewerState> = {
+          history: [newValue],
+          historyIndex: 0,
+        };
+        if (this.state.codeValue !== newValue) {
+          nextState.codeValue = newValue;
         }
-        if (this.state.lastValueBeforeEdit !== this.props.value) {
-          nextState.lastValueBeforeEdit = this.props.value;
-        }
-        if (this.state.codeValue !== this.props.value) {
-          nextState.codeValue = this.props.value;
-        }
-        if (Object.keys(nextState).length > 0) {
-          this.setState(nextState as IMermaidViewerState);
-        }
+        this.setState(nextState as IMermaidViewerState);
       }
 
       if (this.state.activeTab === "diagram") {
@@ -166,7 +183,11 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
       this.state.activeTab === "code" ? this.codeContainerRef.current : this.previewRef.current;
     const isFullscreen = document.fullscreenElement === target;
     if (this.state.isFullscreen !== isFullscreen) {
-      this.setState({ isFullscreen });
+      this.setState({ isFullscreen }, () => {
+        if (this.state.activeTab === "diagram") {
+          window.setTimeout(() => this.fitToContainer(), 100);
+        }
+      });
     }
   };
 
@@ -201,19 +222,21 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
   private async renderMermaid(value: string): Promise<void> {
     const source = value.trim();
     const preview = this.previewRef.current;
-    if (!preview) {
+    const svgContainer = this.svgContainerRef.current;
+    if (!preview || !svgContainer) {
       return;
     }
 
     if (source === this.lastRenderedValue && this.state.hasSvg) {
-      if (preview.innerHTML === "" && this.lastRenderedSvg) {
-        preview.innerHTML = this.lastRenderedSvg;
+      if (svgContainer.innerHTML === "" && this.lastRenderedSvg) {
+        svgContainer.innerHTML = this.lastRenderedSvg;
+        this.fitToContainer();
       }
       return;
     }
 
     if (!source) {
-      preview.innerHTML = "";
+      svgContainer.innerHTML = "";
       this.lastRenderedValue = "";
       this.lastRenderedSvg = "";
       if (this.state.error || this.state.hasSvg) {
@@ -225,14 +248,15 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
     try {
       const renderId = `mermaid-${this.renderIndex++}`;
       const { svg } = await mermaid.render(renderId, source);
-      preview.innerHTML = svg;
+      svgContainer.innerHTML = svg;
+      this.fitToContainer();
       this.lastRenderedSvg = svg;
       this.lastRenderedValue = source;
       if (this.state.error || !this.state.hasSvg) {
         this.setState({ error: null, hasSvg: true });
       }
     } catch (error) {
-      preview.innerHTML = "";
+      svgContainer.innerHTML = "";
       this.lastRenderedSvg = "";
       this.setState({ error: String(error), hasSvg: false });
     }
@@ -249,7 +273,7 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
   }
 
   private handleTabSelect = (nextTab: TabKey): void => {
-    if (nextTab === this.state.activeTab) {
+    if (nextTab === this.state.activeTab || (this.props.readOnly && nextTab === "code")) {
       return;
     }
     this.setState({ activeTab: nextTab }, () => {
@@ -276,29 +300,66 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
   };
 
   private handleChange = (nextValue: string): void => {
-    if (!this.state.canUndo && nextValue !== this.state.codeValue) {
-      this.setState({ canUndo: true, lastValueBeforeEdit: this.state.codeValue });
-    }
     this.pendingLocalChange = true;
     this.setState({ codeValue: nextValue });
     this.props.onChange(nextValue);
+    this.scheduleHistoryCommit(nextValue);
     if (this.state.activeTab === "diagram") {
       this.scheduleRender(300, nextValue);
     }
   };
 
-  private handleUndo = (): void => {
-    if (!this.state.canUndo) {
+  private scheduleHistoryCommit(value: string): void {
+    if (this.historyTimer) {
+      window.clearTimeout(this.historyTimer);
+    }
+    this.historyTimer = window.setTimeout(() => {
+      this.commitToHistory(value);
+    }, 1500);
+  }
+
+  private commitToHistory(value: string): void {
+    const { history, historyIndex } = this.state;
+    if (history[historyIndex] === value) {
       return;
     }
-    const undoValue = this.state.lastValueBeforeEdit;
+    const trimmed = history.slice(0, historyIndex + 1);
+    trimmed.push(value);
+    const capped = trimmed.length > 50 ? trimmed.slice(trimmed.length - 50) : trimmed;
+    this.setState({ history: capped, historyIndex: capped.length - 1 });
+  }
+
+  private handleUndo = (): void => {
+    const { history, historyIndex } = this.state;
+    if (historyIndex <= 0) {
+      return;
+    }
+    const nextIndex = historyIndex - 1;
+    const undoValue = history[nextIndex];
     this.pendingLocalChange = true;
-    this.setState({ canUndo: false, codeValue: undoValue }, () => {
+    this.setState({ historyIndex: nextIndex, codeValue: undoValue }, () => {
       this.props.onChange(undoValue);
       if (this.state.activeTab === "diagram") {
         this.scheduleRender(0, undoValue);
       }
       this.setStatus(this.props.strings.statusUndo);
+    });
+  };
+
+  private handleRedo = (): void => {
+    const { history, historyIndex } = this.state;
+    if (historyIndex >= history.length - 1) {
+      return;
+    }
+    const nextIndex = historyIndex + 1;
+    const redoValue = history[nextIndex];
+    this.pendingLocalChange = true;
+    this.setState({ historyIndex: nextIndex, codeValue: redoValue }, () => {
+      this.props.onChange(redoValue);
+      if (this.state.activeTab === "diagram") {
+        this.scheduleRender(0, redoValue);
+      }
+      this.setStatus(this.props.strings.statusRedo);
     });
   };
 
@@ -493,6 +554,93 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
     return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
   }
 
+  private fitToContainer(): void {
+    const outer = this.previewRef.current;
+    const inner = this.svgContainerRef.current;
+    if (!outer || !inner) {
+      return;
+    }
+    const svgEl = inner.querySelector<SVGSVGElement>("svg");
+    if (!svgEl) {
+      return;
+    }
+    // Reset transform temporarily to measure natural SVG size
+    const saved = inner.style.transform;
+    inner.style.transform = "none";
+    const svgW = svgEl.scrollWidth;
+    const svgH = svgEl.scrollHeight;
+    inner.style.transform = saved;
+    if (!svgW || !svgH) {
+      return;
+    }
+    const padding = 16;
+    const availW = Math.max(1, outer.clientWidth - padding);
+    const availH = Math.max(1, outer.clientHeight - padding);
+    const fitZoom = Math.min(availW / svgW, availH / svgH);
+    const panX = (availW - svgW * fitZoom) / 2 + padding / 2;
+    const panY = (availH - svgH * fitZoom) / 2 + padding / 2;
+    // Apply immediately to DOM to avoid flash, then sync to React state
+    inner.style.transform = `translate(${panX}px, ${panY}px) scale(${fitZoom})`;
+    this.setState({ zoom: fitZoom, panX, panY });
+  }
+
+  private handleWheel = (e: WheelEvent): void => {
+    e.preventDefault();
+    const outer = this.previewRef.current;
+    if (!outer) {
+      return;
+    }
+    const rect = outer.getBoundingClientRect();
+    const cx = e.clientX - rect.left;
+    const cy = e.clientY - rect.top;
+    const factor = e.deltaY < 0 ? 1.15 : 1 / 1.15;
+    const { zoom, panX, panY } = this.state;
+    const newZoom = Math.max(0.05, Math.min(20, zoom * factor));
+    const contentX = (cx - panX) / zoom;
+    const contentY = (cy - panY) / zoom;
+    const newPanX = cx - contentX * newZoom;
+    const newPanY = cy - contentY * newZoom;
+    this.setState({ zoom: newZoom, panX: newPanX, panY: newPanY });
+  };
+
+  private handlePanStart = (e: React.MouseEvent<HTMLDivElement>): void => {
+    if (e.button !== 0) {
+      return;
+    }
+    e.preventDefault();
+    this.isDragging = true;
+    this.dragStartX = e.clientX;
+    this.dragStartY = e.clientY;
+    this.dragStartPanX = this.state.panX;
+    this.dragStartPanY = this.state.panY;
+    if (this.previewRef.current) {
+      this.previewRef.current.style.cursor = "grabbing";
+    }
+  };
+
+  private handlePanMove = (e: React.MouseEvent<HTMLDivElement>): void => {
+    if (!this.isDragging) {
+      return;
+    }
+    const dx = e.clientX - this.dragStartX;
+    const dy = e.clientY - this.dragStartY;
+    this.setState({ panX: this.dragStartPanX + dx, panY: this.dragStartPanY + dy });
+  };
+
+  private handlePanEnd = (): void => {
+    if (!this.isDragging) {
+      return;
+    }
+    this.isDragging = false;
+    if (this.previewRef.current) {
+      this.previewRef.current.style.cursor = "grab";
+    }
+  };
+
+  private handleDoubleClick = (): void => {
+    this.fitToContainer();
+  };
+
   private escapeHtml(value: string): string {
     return value
       .replace(/&/g, "&amp;")
@@ -549,6 +697,8 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
   public render(): React.ReactNode {
     const hasSvg = this.state.hasSvg;
     const hasCode = Boolean(this.state.codeValue?.trim());
+    const canUndo = this.state.historyIndex > 0;
+    const canRedo = this.state.historyIndex < this.state.history.length - 1;
     const lineCount = Math.max(1, this.state.codeValue.split(/\r?\n/).length);
     const lineNumbers = Array.from({ length: lineCount }, (_value, index) => index + 1).join("\n");
     const isCodeTab = this.state.activeTab === "code";
@@ -563,8 +713,15 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
         key: "undo",
         iconName: "Undo",
         onClick: this.handleUndo,
-        disabled: !this.state.canUndo,
+        disabled: !canUndo,
         label: this.props.strings.tooltipUndo,
+      },
+      {
+        key: "redo",
+        iconName: "Redo",
+        onClick: this.handleRedo,
+        disabled: !canRedo,
+        label: this.props.strings.tooltipRedo,
       },
       {
         key: "copy",
@@ -595,19 +752,19 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
         label: this.props.strings.tooltipOpenInMermaidLive,
       },
     ];
-    const visibleItems = this.state.canUndo
-      ? commandBarItems
-      : commandBarItems.filter((item) => item.key !== "undo");
-    const codeKeys = new Set(["undo", "copy", "download", "fullscreen", "open"]);
-    const toolbarItems = isCodeTab
+    const historyKeys = new Set(["undo", "redo"]);
+    const visibleItems = this.props.readOnly
+      ? commandBarItems.filter((item) => !historyKeys.has(item.key))
+      : (canUndo || canRedo)
+        ? commandBarItems
+        : commandBarItems.filter((item) => !historyKeys.has(item.key));
+    const showCodeTab = !this.props.readOnly && isCodeTab;
+    const codeKeys = new Set(["undo", "redo", "copy", "download", "fullscreen", "open"]);
+    const toolbarItems = showCodeTab
       ? visibleItems.filter((item) => codeKeys.has(item.key))
       : visibleItems;
-    const primaryItems = isCodeTab
-      ? toolbarItems.filter((item) => item.key === "undo")
-      : toolbarItems.slice(0, 1);
-    const secondaryItems = isCodeTab
-      ? toolbarItems.filter((item) => item.key !== "undo")
-      : toolbarItems.slice(1);
+    const primaryItems = toolbarItems.filter((item) => historyKeys.has(item.key));
+    const secondaryItems = toolbarItems.filter((item) => !historyKeys.has(item.key));
 
     return (
       <div
@@ -638,51 +795,53 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
           }}
         >
           <Stack horizontal verticalAlign="center" tokens={{ childrenGap: 12 }}>
-            <div role="tablist" style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              {([
-                { key: "diagram", label: this.props.strings.tabDiagram },
-                { key: "code", label: this.props.strings.tabCode },
-              ] as const).map((tab) => {
-                const isActive = this.state.activeTab === tab.key;
-                return (
-                  <button
-                    key={tab.key}
-                    type="button"
-                    role="tab"
-                    aria-selected={isActive}
-                    onClick={() => this.handleTabSelect(tab.key)}
-                    style={{
-                      border: "none",
-                      background: "transparent",
-                      padding: "0 2px",
-                      cursor: "pointer",
-                      color: "#242424",
-                      fontFamily: "Segoe UI, Arial, sans-serif",
-                    }}
-                  >
-                    <span
-                      className={`mv-tab-label${isActive ? " is-active" : ""}`}
+            {!this.props.readOnly && (
+              <div role="tablist" style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                {([
+                  { key: "diagram", label: this.props.strings.tabDiagram },
+                  { key: "code", label: this.props.strings.tabCode },
+                ] as const).map((tab) => {
+                  const isActive = this.state.activeTab === tab.key;
+                  return (
+                    <button
+                      key={tab.key}
+                      type="button"
+                      role="tab"
+                      aria-selected={isActive}
+                      onClick={() => this.handleTabSelect(tab.key)}
                       style={{
-                        display: "inline-block",
-                        fontSize: 14,
-                        lineHeight: "14px",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.4px",
-                        paddingBottom: 8,
-                        fontWeight: isActive ? 600 : 400,
-                        position: "relative",
+                        border: "none",
+                        background: "transparent",
+                        padding: "0 2px",
+                        cursor: "pointer",
+                        color: "#242424",
+                        fontFamily: "Segoe UI, Arial, sans-serif",
                       }}
                     >
-                      {tab.label}
                       <span
-                        className="mv-tab-underline"
-                        style={{ background: this.props.tabAccentColor }}
-                      />
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
+                        className={`mv-tab-label${isActive ? " is-active" : ""}`}
+                        style={{
+                          display: "inline-block",
+                          fontSize: 14,
+                          lineHeight: "14px",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.4px",
+                          paddingBottom: 8,
+                          fontWeight: isActive ? 600 : 400,
+                          position: "relative",
+                        }}
+                      >
+                        {tab.label}
+                        <span
+                          className="mv-tab-underline"
+                          style={{ background: this.props.tabAccentColor }}
+                        />
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </Stack>
           <div style={{ display: "flex", alignItems: "center" }}>
             {primaryItems.map((item) => (
@@ -763,7 +922,7 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
           </div>
         ) : null}
 
-        {this.state.activeTab === "code" ? (
+        {showCodeTab ? (
           <div
             ref={this.codeContainerRef}
             style={{
@@ -865,20 +1024,33 @@ export class MermaidViewerView extends React.Component<IMermaidViewerProps, IMer
           <>
             <div
               ref={this.previewRef}
+              onMouseDown={this.handlePanStart}
+              onMouseMove={this.handlePanMove}
+              onMouseUp={this.handlePanEnd}
+              onMouseLeave={this.handlePanEnd}
+              onDoubleClick={this.handleDoubleClick}
               style={{
                 minHeight: 0,
                 borderRadius: "6px",
-                padding: "8px",
                 background: "#ffffff",
                 border: "none",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                overflow: this.state.isFullscreen ? "auto" : "visible",
+                overflow: "hidden",
                 width: "100%",
                 flex: "1 1 auto",
+                cursor: "grab",
+                position: "relative",
+                userSelect: "none",
               }}
-            />
+            >
+              <div
+                ref={this.svgContainerRef}
+                style={{
+                  transform: `translate(${this.state.panX}px, ${this.state.panY}px) scale(${this.state.zoom})`,
+                  transformOrigin: "0 0",
+                  display: "inline-block",
+                }}
+              />
+            </div>
             {this.state.error ? (
               <div
                 style={{
