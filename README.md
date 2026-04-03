@@ -48,6 +48,9 @@ Existing translations are:
 - 1036 = French
 - 1040 = Italian
 
-## Licensing / Third-Party Notices
+## License
+This project is licensed under the [MIT License](LICENSE).
+
+## Third-Party Notices
 Third-party license texts are in ThirdPartyLicenses/ and must be included in distributions.
 Dependency versions and notices are documented in THIRD-PARTY-NOTICES.txt.
